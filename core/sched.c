@@ -22,6 +22,7 @@
  */
 
 #include <stdint.h>
+#include <inttypes.h>
  
 #include "sched.h"
 #include "kernel.h"
@@ -173,11 +174,12 @@ void sched_set_status(tcb_t *process, unsigned int status)
     process->status = status;
 }
 
-void sched_switch(uint16_t current_prio, uint16_t other_prio)
+void sched_switch(uint16_t other_prio)
 {
     int in_isr = inISR();
+    uint16_t current_prio = active_thread->priority;
 
-    DEBUG("%s: %i %i %i\n", active_thread->name, (int)current_prio, (int)other_prio, in_isr);
+    DEBUG("%s: %" PRIu16 " %" PRIu16 " %i\n", active_thread->name, current_prio, other_prio, in_isr);
 
     if (current_prio >= other_prio) {
         if (in_isr) {
