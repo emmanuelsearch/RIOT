@@ -31,7 +31,7 @@
 #include "thread.h"
 
 #define SERVER_MSG_QUEUE_SIZE   (8)
-#define SERVER_BUFFER_SIZE      (64)
+#define SERVER_BUFFER_SIZE      (256)
 
 static int server_socket = -1;
 static char server_buffer[SERVER_BUFFER_SIZE];
@@ -77,6 +77,9 @@ static void *_server_thread(void *args)
         }
         else {
             printf("Received data: ");
+            
+            /* TO DO OTP: in below puts() function call, replace argument server_buffer 
+            with decrypt(server_buffer) */
             puts(server_buffer);
         }
     }
@@ -108,6 +111,10 @@ static int udp_send(char *addr_str, char *port_str, char *data, unsigned int num
         return 1;
     }
     for (unsigned int i = 0; i < num; i++) {
+    
+        /* TO DO OTP: in below sendto() function call, replace arguments data and 
+            data_len with encrypt(data) and its length */
+            
         if (sendto(s, data, data_len, 0, (struct sockaddr *)&dst, sizeof(dst)) < 0) {
             puts("could not send");
         }
@@ -139,10 +146,10 @@ static int udp_start_server(char *port_str)
     return 0;
 }
 
-int udp_cmd(int argc, char **argv)
+int otp_cmd(int argc, char **argv)
 {
     if (argc < 2) {
-        printf("usage: %s [send|server]\n", argv[0]);
+        printf("usage: %s [send|server|key]\n", argv[0]);
         return 1;
     }
 
@@ -178,6 +185,18 @@ int udp_cmd(int argc, char **argv)
             puts("error: invalid command");
             return 1;
         }
+    }
+    else if (strcmp(argv[1], "key") == 0) {
+        if (argc < 3) {
+            printf("usage: key <index>\n");
+            return 1;
+        }
+        
+        uint32_t key_index = (uint32_t)atoi(argv[2]);
+        printf("Cipher initialized to key at index %u \n", (unsigned int)key_index);
+        return 1;
+        
+        /* TO DO OTP: initialize keys here (modify above code) */
     }
     else {
         puts("error: invalid command");
