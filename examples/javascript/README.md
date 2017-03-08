@@ -2,11 +2,13 @@
 
 This example enables to execute arbitrary Javascript directly from the command line on the RIOT shell. The example uses [Jerryscript](https://github.com/jerryscript-project/jerryscript).
 
+Best used with a serial communication program such [minicom](https://help.ubuntu.com/community/Minicom) instead of PyTerm (see why below).
+
 Still WIP: 
 
 - For now it only works on Cortex M boards, and depending on the CPU, you may need to tweek line 9 in RIOT/pkg/Makefile.jerryscript
 
-- Expect some issues with PyTerm which may interpret the first `;` as the end of the script command
+- Expect some issues with PyTerm which interprets the first `;` as the end of the script command, and if the script is long, it seems to get confused (hence the recommended use of minicom). To start playing with PyTerm, edit `;` line 256 of RIOT/dist/tools/pyterm/pyterm
 
 - Except in the `print` instruction in your script, you may have to replace single brackets ' with \'.
 
