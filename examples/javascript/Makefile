@@ -1,17 +1,3 @@
-# Copyright JS Foundation and other contributors, http://js.foundation
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 # application name
 APPLICATION = riot_jerry
 
@@ -21,8 +7,6 @@ BOARD ?= iotlab-m3
 
 # path to the RIOT base directory
 RIOTBASE ?= $(CURDIR)/../..
-# path to the JERRYSCRIPT directory
-#JERRYDIR ?= $(CURDIR)/../../pkg/jerryscript
 
 # path to the application directory
 APPDIR ?= $(CURDIR)
@@ -34,6 +18,9 @@ BINDIR ?= $(CURDIR)/bin/
 # which is not needed in a production environment but helps in the
 # development process:
 CFLAGS += -DDEVELHELP
+
+# Set stack size to something big
+CFLAGS += -DTHREAD_STACKSIZE_MAIN=9092
 
 # Change this to 0 show compiler invocation lines by default:
 QUIET ?= 1
@@ -47,7 +34,5 @@ USEMODULE += shell_commands
 # Add the package for Jerryscript
 USEPKG += jerryscript
 
-# Add the jerry lib
-#USEMODULE += libjerrycore
 
 include $(RIOTBASE)/Makefile.include

@@ -1,16 +1,12 @@
-# MODULE=nanocoap
-
-# SRC := nanocoap.c nanocoap_sock.c
-
 RIOTBASE   ?= $(CURDIR)/../../../../../..
 BUILD_DIR  ?= $(CURDIR)/riot
-#COPYTARGET ?= $(RIOTBASE)targets/riot/bin
 
 JERRYHEAP  ?= 16
 
  EXT_CFLAGS := -D__TARGET_RIOT_STM32F1
- EXT_CFLAGS += -mlittle-endian -mthumb -mcpu=cortex-m3
- EXT_CFLAGS += -Wno-error=format=
+# EXT_CFLAGS += -mlittle-endian -mthumb -mcpu=cortex-m3
+ EXT_CFLAGS += -mlittle-endian -mthumb -mcpu=cortex-m0plus
+ EXT_CFLAGS += -Wno-error=old-style-definition
 
 .PHONY: libjerry riot-jerry flash clean
 
@@ -18,7 +14,6 @@ JERRYHEAP  ?= 16
 
 libjerry:
 	mkdir -p $(BUILD_DIR)
-#	mkdir -p $(COPYTARGET)
 	cmake -B$(BUILD_DIR) -H./ \
 	 -DENABLE_LTO=OFF \
 	 -DFEATURE_VALGRIND=OFF \
@@ -32,10 +27,7 @@ libjerry:
 	 -DEXTERNAL_COMPILE_FLAGS="$(EXT_CFLAGS)" \
 	 -DMEM_HEAP_SIZE_KB=$(JERRYHEAP)
 
-	make -C$(BUILD_DIR) jerry-core
-#	cp $(BUILD_DIR)/lib/libjerry-core.a $(COPYTARGET)/libjerrycore.a
-
-#riot-jerry: libjerry
-#	make -f ./targets/riot-iotlab/Makefile
+	make -C $(BUILD_DIR) jerry-core
+	cp $(BUILD_DIR)/lib/libjerry-core.a $(RIOTBASE)/examples/javascript/bin/jerryscript.a
 
 include $(RIOTBASE)/Makefile.base
