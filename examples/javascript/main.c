@@ -25,7 +25,7 @@
 int shell_script (int argc, char **argv)
 {
     if (argc < 2) {
-        puts("Usage: script <your script here>\n\nTry for instance: script print('Hello World';)");
+        puts("Usage: script <your script here>\n\nTry for instance: script print('Hello World');");
         return -1;
     }
  int count = argc-1;

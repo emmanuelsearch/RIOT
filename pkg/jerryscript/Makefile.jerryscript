@@ -4,8 +4,8 @@ BUILD_DIR  ?= $(CURDIR)/riot
 JERRYHEAP  ?= 16
 
  EXT_CFLAGS := -D__TARGET_RIOT_STM32F1
-# EXT_CFLAGS += -mlittle-endian -mthumb -mcpu=cortex-m3
- EXT_CFLAGS += -mlittle-endian -mthumb -mcpu=cortex-m0plus
+ EXT_CFLAGS += -mlittle-endian -mthumb -mcpu=cortex-m3
+# EXT_CFLAGS += -mlittle-endian -mthumb -mcpu=cortex-m0plus
  EXT_CFLAGS += -Wno-error=old-style-definition
 
 .PHONY: libjerry riot-jerry flash clean
