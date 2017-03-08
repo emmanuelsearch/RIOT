@@ -2,6 +2,14 @@
 
 This example enables to execute arbitrary Javascript directly from the command line on the RIOT shell. The example uses [Jerryscript](https://github.com/jerryscript-project/jerryscript).
 
+Still WIP: 
+
+- For now it only works on Cortex M boards, and depending on the CPU, you may need to tweek line 9 in RIOT/pkg/Makefile.jerryscript
+
+- Expect some issues with PyTerm which may interpret the first `;` as the end of the script command
+
+- Except in the `print` instruction in your script, you may have to replace single brackets ' with \'.
+
 ### How to build
 
 
@@ -26,5 +34,4 @@ script var person = { fname:\'John\', lname:\'Doe\', age:25 }; var text = \'\'; 
 ```
 
 Remark: outside of the print command, you may have to replace single brackets ' with \'.
-```
 
