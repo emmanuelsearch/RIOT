@@ -192,6 +192,8 @@ int gcoap_cli_cmd(int argc, char **argv)
                 }
                 printf("gcoap_cli: sending msg ID %u, %u bytes\n", coap_get_id(&pdu),
                        (unsigned) len);
+                printf("Resource: '%s'\n", argv[4]);
+                printf("Payload: '%s'\n", argv[5]);
                 if (!_send(&buf[0], len, argv[2], argv[3])) {
                     puts("gcoap_cli: msg send failed");
                 }
