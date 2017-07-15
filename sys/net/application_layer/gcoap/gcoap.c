@@ -648,6 +648,50 @@ int gcoap_req_init(coap_pkt_t *pdu, uint8_t *buf, size_t len, unsigned code,
     }
 }
 
+int gcoap_req_init_uriquery(coap_pkt_t *pdu, uint8_t *buf, size_t len, unsigned code,
+                                                              char *path) {
+    (void)len;
+
+    pdu->hdr = (coap_hdr_t *)buf;
+    memset(pdu->url, 0, NANOCOAP_URL_MAX);
+
+    /* generate token */
+#if GCOAP_TOKENLEN
+    uint8_t token[GCOAP_TOKENLEN];
+    for (size_t i = 0; i < GCOAP_TOKENLEN; i += 4) {
+        uint32_t rand = random_uint32();
+        memcpy(&token[i],
+               &rand,
+               (GCOAP_TOKENLEN - i >= 4) ? 4 : GCOAP_TOKENLEN - i);
+    }
+    uint16_t msgid = (uint16_t)atomic_fetch_add(&_coap_state.next_message_id, 1);
+    ssize_t hdrlen = coap_build_hdr(pdu->hdr, COAP_TYPE_NON, &token[0], GCOAP_TOKENLEN,
+                                    code, msgid);
+#else
+    uint16_t msgid = (uint16_t)atomic_fetch_add(&_coap_state.next_message_id, 1);
+    ssize_t hdrlen = coap_build_hdr(pdu->hdr, COAP_TYPE_NON, NULL, GCOAP_TOKENLEN,
+                                    code, msgid);
+#endif
+
+    if (hdrlen > 0) {
+        /* Reserve some space between the header and payload to write options later */
+        /* With the URI query, the options are 34 bytes long */
+        pdu->payload      = buf + coap_get_total_hdr_len(pdu) + strlen(path)
+                                                              + GCOAP_REQ_OPTIONS_BUF + 26;
+        /* Payload length really zero at this point, but we set this to the available
+         * length in the buffer. Allows us to reconstruct buffer length later. */
+        pdu->payload_len  = len - (pdu->payload - buf);
+        pdu->content_type = COAP_FORMAT_NONE;
+
+        memcpy(&pdu->url[0], path, strlen(path));
+        return 0;
+    }
+    else {
+        /* reason for negative hdrlen is not defined, so we also are vague */
+        return -1;
+    }
+}
+
 ssize_t gcoap_finish(coap_pkt_t *pdu, size_t payload_len, unsigned format)
 {
     /* reconstruct full PDU buffer length */
