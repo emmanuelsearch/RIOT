@@ -43,15 +43,20 @@ static msg_t _main_msg_queue[MAIN_QUEUE_SIZE];
 
 extern int gcoap_cli_cmd(int argc, char **argv);
 extern void gcoap_cli_init(void);
+extern int lwm2m_cli_cmd(int argc, char **argv);
 extern int _netif_config(int argc, char **argv);
 
 static const shell_command_t shell_commands[] = {
     { "coap", "CoAP example", gcoap_cli_cmd },
+    { "lwm2m", "lwM2M example", lwm2m_cli_cmd },
     { NULL, NULL, NULL }
 };
 
 void *jsthread_handler(void *arg)
 {
+    /* remove warning unused parameter arg */
+    (void)arg;
+    
     while(1) {
         if(strlen((char*)script)) {
             jerry_run_simple(script, strlen((char*)script), JERRY_INIT_EMPTY);

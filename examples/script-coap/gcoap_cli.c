@@ -245,3 +245,79 @@ void gcoap_cli_init(void)
 {
     gcoap_register_listener(&_listener);
 }
+
+int lwm2m_cli_cmd(int argc, char **argv)
+{
+    /* Ordered like the RFC method code numbers, but off by 1. GET is code 0. */
+    char *method_codes[] = {"get", "post", "put"};
+    uint8_t buf[GCOAP_PDU_BUF_SIZE];
+    coap_pkt_t pdu;
+    size_t len;
+
+    if (argc == 1) {
+        /* show help for main commands */
+        goto end;
+    }
+
+    for (size_t i = 0; i < sizeof(method_codes) / sizeof(char*); i++) {
+        if (strcmp(argv[1], method_codes[i]) == 0) {
+            if (argc == 5 || argc == 6) {
+                if (argc == 6) {
+                    gcoap_req_init(&pdu, &buf[0], GCOAP_PDU_BUF_SIZE, i+1, argv[4]);
+                    memcpy(pdu.payload, argv[5], strlen(argv[5]));
+                    len = gcoap_finish(&pdu, strlen(argv[5]), COAP_FORMAT_TEXT);
+                }
+                else {
+                    len = gcoap_request(&pdu, &buf[0], GCOAP_PDU_BUF_SIZE, i+1,
+                                                                           argv[4]);
+                }
+                printf("lwm2m_cli: sending msg ID %u, %u bytes\n", coap_get_id(&pdu),
+                       (unsigned) len);
+                printf("Resource: '%s'\n", argv[4]);
+                printf("Payload: '%s'\n", argv[5]);
+                if (!_send(&buf[0], len, argv[2], argv[3])) {
+                    puts("lwm2m_cli: msg send failed");
+                }
+                else {
+                    /* send Observe notification for /cli/stats */
+                    switch (gcoap_obs_init(&pdu, &buf[0], GCOAP_PDU_BUF_SIZE,
+                            &_resources[0])) {
+                    case GCOAP_OBS_INIT_OK:
+                        DEBUG("lwm2m_cli: creating /cli/stats notification\n");
+                        size_t payload_len = fmt_u16_dec((char *)pdu.payload, req_count);
+                        len = lwm2m_finish(&pdu, payload_len, COAP_FORMAT_TEXT);
+                        gcoap_obs_send(&buf[0], len, &_resources[0]);
+                        break;
+                    case GCOAP_OBS_INIT_UNUSED:
+                        DEBUG("lwm2m_cli: no observer for /cli/stats\n");
+                        break;
+                    case GCOAP_OBS_INIT_ERR:
+                        DEBUG("lwm2m_cli: error initializing /cli/stats notification\n");
+                        break;
+                    }
+                }
+                return 0;
+            }
+            else {
+                printf("usage: %s <get|post|put> <addr> <port> <path> [data]\n",
+                       argv[0]);
+                return 1;
+            }
+        }
+    }
+
+    if (strcmp(argv[1], "info") == 0) {
+        if (argc == 2) {
+            uint8_t open_reqs = gcoap_op_state();
+
+            printf("CoAP server is listening on port %u\n", GCOAP_PORT);
+            printf(" CLI requests sent: %u\n", req_count);
+            printf("CoAP open requests: %u\n", open_reqs);
+            return 0;
+        }
+    }
+
+    end:
+    printf("usage: %s <get|post|put|info>\n", argv[0]);
+    return 1;
+}

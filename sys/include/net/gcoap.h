@@ -513,6 +513,8 @@ int gcoap_req_init(coap_pkt_t *pdu, uint8_t *buf, size_t len,
  */
 ssize_t gcoap_finish(coap_pkt_t *pdu, size_t payload_len, unsigned format);
 
+ssize_t lwm2m_finish(coap_pkt_t *pdu, size_t payload_len, unsigned format);
+
 /**
  * @brief   Writes a complete CoAP request PDU when there is not a payload
  *

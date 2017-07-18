@@ -31,9 +31,11 @@ static void *_event_loop(void *arg);
 static void _listen(sock_udp_t *sock);
 static ssize_t _well_known_core_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len);
 static ssize_t _write_options(coap_pkt_t *pdu, uint8_t *buf, size_t len);
+static ssize_t _write_more_options(coap_pkt_t *pdu, uint8_t *buf, size_t len);
 static size_t _handle_req(coap_pkt_t *pdu, uint8_t *buf, size_t len,
                                                          sock_udp_ep_t *remote);
 static ssize_t _finish_pdu(coap_pkt_t *pdu, uint8_t *buf, size_t len);
+static ssize_t _lwm2m_finish_pdu(coap_pkt_t *pdu, uint8_t *buf, size_t len);
 static void _expire_request(gcoap_request_memo_t *memo);
 static void _find_req_memo(gcoap_request_memo_t **memo_ptr, coap_pkt_t *pdu,
                                                             uint8_t *buf, size_t len);
@@ -327,6 +329,30 @@ static ssize_t _finish_pdu(coap_pkt_t *pdu, uint8_t *buf, size_t len)
     }
 }
 
+
+/*
+ * Finishes handling a PDU -- write options and reposition payload.
+ *
+ * Returns the size of the PDU within the buffer, or < 0 on error.
+ */
+static ssize_t _lwm2m_finish_pdu(coap_pkt_t *pdu, uint8_t *buf, size_t len)
+{
+    ssize_t hdr_len = _write_more_options(pdu, buf, len);
+    DEBUG("gcoap: header length: %i\n", (int)hdr_len);
+
+    if (hdr_len > 0) {
+        /* move payload over unused space after options */
+        if (pdu->payload_len) {
+            memmove(buf + hdr_len, pdu->payload, pdu->payload_len);
+        }
+
+        return hdr_len + pdu->payload_len;
+    }
+    else {
+        return -1;      /* generic failure code */
+    }
+}
+
 /*
  * Finds the memo for an outstanding request within the _coap_state.open_reqs
  * array. Matches on token.
@@ -460,12 +486,87 @@ static ssize_t _write_options(coap_pkt_t *pdu, uint8_t *buf, size_t len)
         /* last_optnum = COAP_OPT_URI_QUERY; */
     }
 
+
+
+
     /* write payload marker */
     if (pdu->payload_len) {
         *bufpos++ = GCOAP_PAYLOAD_MARKER;
     }
     return bufpos - buf;
 }
+
+
+
+
+/*
+ * Creates CoAP options and sets payload marker, if any.
+ *
+ * Returns length of header + options, or -EINVAL on illegal path.
+ */
+static ssize_t _write_more_options(coap_pkt_t *pdu, uint8_t *buf, size_t len)
+{
+    uint8_t last_optnum = 0;
+    (void)len;
+    const char* query_option_1 = "b=U";
+    const char* query_option_2 = "lwm2m=1.0";
+    const char* query_option_3 = "lt=30";
+    const char* query_option_4 = "ep=RIOT";
+
+    uint8_t *bufpos = buf + coap_get_total_hdr_len(pdu);  /* position for write */
+
+    /* Observe for notification or registration response */
+    if (coap_get_code_class(pdu) == COAP_CLASS_SUCCESS && coap_has_observe(pdu)) {
+        uint32_t nval  = htonl(pdu->observe_value);
+        uint8_t *nbyte = (uint8_t *)&nval;
+        unsigned i;
+        /* find address of non-zero MSB; max 3 bytes */
+        for (i = 1; i < 4; i++) {
+            if (*(nbyte+i) > 0) {
+                break;
+            }
+        }
+        bufpos += coap_put_option(bufpos, last_optnum, COAP_OPT_OBSERVE,
+                                                       nbyte+i, 4-i);
+        last_optnum = COAP_OPT_OBSERVE;
+    }
+
+    /* Uri-Path for request */
+    if (coap_get_code_class(pdu) == COAP_CLASS_REQ) {
+        size_t url_len = strlen((char *)pdu->url);
+        if (url_len) {
+            if (pdu->url[0] != '/') {
+                DEBUG("gcoap: _write_options: path does not start with '/'\n");
+                return -EINVAL;
+            }
+            bufpos += coap_put_option_url(bufpos, last_optnum, (char *)&pdu->url[1]);
+            last_optnum = COAP_OPT_URI_PATH;
+        }
+    }
+
+    /* Content-Format */
+    if (pdu->content_type != COAP_FORMAT_NONE) {
+        bufpos += coap_put_option_ct(bufpos, last_optnum, pdu->content_type);
+        /* uncomment when add an option after Content-Format */
+        last_optnum = COAP_OPT_CONTENT_FORMAT;
+    }
+
+    /* Query options */
+    /* to do: need to define COAP_OPT_QUERY in nanocoap.h */
+    bufpos += coap_put_option(bufpos, last_optnum,  (uint16_t) 15, (uint8_t *)query_option_1, (size_t) 3);
+    last_optnum = (uint16_t) 15;
+    bufpos += coap_put_option(bufpos, last_optnum, (uint16_t) 15, (uint8_t *)query_option_2, (size_t) 9);
+    bufpos += coap_put_option(bufpos, last_optnum, (uint16_t) 15, (uint8_t *)query_option_3, (size_t) 5);
+    bufpos += coap_put_option(bufpos, last_optnum, (uint16_t) 15, (uint8_t *)query_option_4, (size_t) 7);
+
+    /* write payload marker */
+    if (pdu->payload_len) {
+        *bufpos++ = GCOAP_PAYLOAD_MARKER;
+    }
+    return bufpos - buf;
+}
+
+
 
 /*
  * Find registered observer for a remote address and port.
@@ -700,6 +801,16 @@ ssize_t gcoap_finish(coap_pkt_t *pdu, size_t payload_len, unsigned format)
     pdu->content_type = format;
     pdu->payload_len  = payload_len;
     return _finish_pdu(pdu, (uint8_t *)pdu->hdr, len);
+}
+
+ssize_t lwm2m_finish(coap_pkt_t *pdu, size_t payload_len, unsigned format)
+{
+    /* reconstruct full PDU buffer length */
+    size_t len = pdu->payload_len + (pdu->payload - (uint8_t *)pdu->hdr);
+
+    pdu->content_type = format;
+    pdu->payload_len  = payload_len;
+    return _lwm2m_finish_pdu(pdu, (uint8_t *)pdu->hdr, len);
 }
 
 size_t gcoap_req_send(const uint8_t *buf, size_t len, const ipv6_addr_t *addr,
