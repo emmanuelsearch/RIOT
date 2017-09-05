@@ -158,7 +158,7 @@ static size_t _send(uint8_t *buf, size_t len, char *addr_str, char *port_str)
         return 0;
     }
 
-    bytes_sent = gcoap_req_send2(buf, len, &remote, _resp_handler);
+    bytes_sent = gcoap_req_send2(buf, len, &remote, (gcoap_resp_handler_t) _resp_handler);
     if (bytes_sent > 0) {
         req_count++;
     }
@@ -183,6 +183,10 @@ int gcoap_cli_cmd(int argc, char **argv)
             if (argc == 5 || argc == 6) {
                 if (argc == 6) {
                     gcoap_req_init(&pdu, &buf[0], GCOAP_PDU_BUF_SIZE, i+1, argv[4]);
+                    gcoap_add_qstring(&pdu, "b", "U");
+                    gcoap_add_qstring(&pdu, "lwm2m", "1.0");
+                    gcoap_add_qstring(&pdu, "lt", "U30");
+                    gcoap_add_qstring(&pdu, "ep", "RIOT");
                     memcpy(pdu.payload, argv[5], strlen(argv[5]));
                     len = gcoap_finish(&pdu, strlen(argv[5]), COAP_FORMAT_TEXT);
                 }
@@ -285,7 +289,7 @@ int lwm2m_cli_cmd(int argc, char **argv)
                     case GCOAP_OBS_INIT_OK:
                         DEBUG("lwm2m_cli: creating /cli/stats notification\n");
                         size_t payload_len = fmt_u16_dec((char *)pdu.payload, req_count);
-                        len = lwm2m_finish(&pdu, payload_len, COAP_FORMAT_TEXT);
+                        len = gcoap_finish(&pdu, payload_len, COAP_FORMAT_TEXT);
                         gcoap_obs_send(&buf[0], len, &_resources[0]);
                         break;
                     case GCOAP_OBS_INIT_UNUSED:
