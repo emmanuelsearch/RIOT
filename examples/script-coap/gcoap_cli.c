@@ -28,6 +28,9 @@
 #include "od.h"
 #include "fmt.h"
 
+#include "cpu_conf.h"
+#include "periph/cpuid.h"
+
 #include "coap_resources.h"
 
 #define ENABLE_DEBUG (0)
@@ -35,6 +38,9 @@
 
 static void _resp_handler(unsigned req_state, coap_pkt_t* pdu);
 static ssize_t _stats_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len);
+
+
+char device_id[10];
 
 static ssize_t _riot_script_handler(coap_pkt_t *pkt, uint8_t *buf, size_t len)
 {
@@ -103,6 +109,7 @@ static void _resp_handler(unsigned req_state, coap_pkt_t* pdu)
     printf("gcoap: response %s, code %1u.%02u", class_str,
                                                 coap_get_code_class(pdu),
                                                 coap_get_code_detail(pdu));
+    
     if (pdu->payload_len) {
         if (pdu->content_type == COAP_FORMAT_TEXT
                 || pdu->content_type == COAP_FORMAT_LINK
@@ -183,10 +190,6 @@ int gcoap_cli_cmd(int argc, char **argv)
             if (argc == 5 || argc == 6) {
                 if (argc == 6) {
                     gcoap_req_init(&pdu, &buf[0], GCOAP_PDU_BUF_SIZE, i+1, argv[4]);
-                    gcoap_add_qstring(&pdu, "b", "U");
-                    gcoap_add_qstring(&pdu, "lwm2m", "1.0");
-                    gcoap_add_qstring(&pdu, "lt", "U30");
-                    gcoap_add_qstring(&pdu, "ep", "RIOT");
                     memcpy(pdu.payload, argv[5], strlen(argv[5]));
                     len = gcoap_finish(&pdu, strlen(argv[5]), COAP_FORMAT_TEXT);
                 }
@@ -247,6 +250,18 @@ int gcoap_cli_cmd(int argc, char **argv)
 
 void gcoap_cli_init(void)
 {
+    
+    uint8_t id[CPUID_LEN];
+    char *pos = device_id;
+    
+    cpuid_get(id);
+    pos += fmt_str(pos, "RIOT-");
+    pos += fmt_byte_hex(pos, id[0]);
+    pos += fmt_byte_hex(pos, id[1]);
+    *pos = '\0';
+    
+    printf("Device ID = %s \n", device_id);
+    
     gcoap_register_listener(&_listener);
 }
 
@@ -268,6 +283,10 @@ int lwm2m_cli_cmd(int argc, char **argv)
             if (argc == 5 || argc == 6) {
                 if (argc == 6) {
                     gcoap_req_init(&pdu, &buf[0], GCOAP_PDU_BUF_SIZE, i+1, argv[4]);
+                    gcoap_add_qstring(&pdu, "b", "U");
+                    gcoap_add_qstring(&pdu, "lwm2m", "1.0");
+                    gcoap_add_qstring(&pdu, "lt", "300");
+                    gcoap_add_qstring(&pdu, "ep", device_id);
                     memcpy(pdu.payload, argv[5], strlen(argv[5]));
                     len = gcoap_finish(&pdu, strlen(argv[5]), COAP_FORMAT_TEXT);
                 }
