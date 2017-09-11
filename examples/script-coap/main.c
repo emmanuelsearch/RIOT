@@ -41,14 +41,11 @@ uint8_t counter=0;
 #define MAIN_QUEUE_SIZE (4)
 static msg_t _main_msg_queue[MAIN_QUEUE_SIZE];
 
-extern int gcoap_cli_cmd(int argc, char **argv);
-extern void gcoap_cli_init(void);
-extern int lwm2m_cli_cmd(int argc, char **argv);
+extern void lwm2m_init(void);
+extern void lwm2m_register(void);
 extern int _netif_config(int argc, char **argv);
 
 static const shell_command_t shell_commands[] = {
-    { "coap", "CoAP example", gcoap_cli_cmd },
-    { "lwm2m", "lwM2M example", lwm2m_cli_cmd },
     { NULL, NULL, NULL }
 };
 
@@ -74,10 +71,11 @@ void *jsthread_handler(void *arg)
 
 int main(void)
 {
+    
     /* for the thread running the shell */
     msg_init_queue(_main_msg_queue, MAIN_QUEUE_SIZE);
-    gcoap_cli_init();
-    puts("Javascript CoAP example");
+    lwm2m_init();
+    puts("Javascript CoAP LWM2M example");
 
     puts("Waiting for address autoconfiguration...");
     xtimer_sleep(3);
@@ -85,6 +83,9 @@ int main(void)
     /* print network addresses */
     puts("Configured network interfaces:");
     _netif_config(0, NULL);
+
+    /* register to LWM2M server */
+    lwm2m_register();
 
     /* launch javascript thread */
     thread_create(jsstack, sizeof(jsstack),
