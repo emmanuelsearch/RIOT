@@ -81,7 +81,7 @@ static ssize_t _riot_script_handler(coap_pkt_t *pkt, uint8_t *buf, size_t len)
 /* CoAP resources */
 static const coap_resource_t _resources[] = {
     { "/cli/stats", COAP_GET, _stats_handler },
-    { "/riot/script", COAP_GET | COAP_PUT, _riot_script_handler },
+    { "/riot/script", COAP_GET | COAP_PUT | COAP_POST, _riot_script_handler },
 };
 static gcoap_listener_t _listener = {
     (coap_resource_t *)&_resources[0],
