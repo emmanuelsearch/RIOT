@@ -679,6 +679,20 @@ int gcoap_get_resource_list(void *buf, size_t maxlen, uint8_t cf);
  */
 int gcoap_add_qstring(coap_pkt_t *pdu, const char *key, const char *val);
 
+/**
+ * @brief   Adds a Proxy-Uri option to a CoAP request
+ *
+ *
+ * @param[out] pdu      The package that is being build
+ * @param[in]  proxy    Proxy URI to add to the header
+ *
+ * @pre     ((pdu != NULL) && (proxy != NULL))
+ *
+ * @return  length of proxy string
+ * @return  -1 on error
+ */
+int gcoap_add_proxy(coap_pkt_t *pdu, const char *proxy);
+
 #ifdef __cplusplus
 }
 #endif

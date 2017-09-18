@@ -43,6 +43,7 @@ char lwm2m_resources[] = "<3/0>, <9/0>, <3303/0>, <3315/0>";
 char lwm2m_server_addr[] = "2a05:d014:677:2900:9786:f713:6820:e17e";
 char lwm2m_server_port[] = "6683";
 char device_id[10];
+char proxy[] = "http://tinyurl.com/rmp-api";
 
 static ssize_t _riot_script_handler(coap_pkt_t *pkt, uint8_t *buf, size_t len)
 {
@@ -192,6 +193,27 @@ void lwm2m_register(void)
     printf("lwm2m: sending msg ID %u, %u bytes\n", coap_get_id(&pdu),
            (unsigned) len);
     printf("Resources registered: '%s'\n", lwm2m_resources);
+    if (!_send(&buf[0], len, lwm2m_server_addr, lwm2m_server_port)) {
+        puts("lwm2m registration: msg send failed");
+    }
+
+}
+
+void rmp_register(void)
+{
+    uint8_t buf[GCOAP_PDU_BUF_SIZE + 64];
+    coap_pkt_t pdu;
+    size_t len;
+    
+    /* register to RMP server */
+    gcoap_req_init(&pdu, &buf[0], GCOAP_PDU_BUF_SIZE + 64, 2, "/rd");
+    gcoap_add_proxy(&pdu, proxy);
+    memcpy(pdu.payload, lwm2m_resources, strlen(lwm2m_resources));
+    len = gcoap_finish(&pdu, strlen(lwm2m_resources), COAP_FORMAT_TEXT);
+    
+    printf("rmp registration: sending msg ID %u, %u bytes\n", coap_get_id(&pdu),
+           (unsigned) len);
+    printf("Payload: '%s'\n", lwm2m_resources);
     if (!_send(&buf[0], len, lwm2m_server_addr, lwm2m_server_port)) {
         puts("lwm2m registration: msg send failed");
     }

@@ -457,7 +457,13 @@ static ssize_t _write_options(coap_pkt_t *pdu, uint8_t *buf, size_t len)
         bufpos += coap_put_option_uri(bufpos, last_optnum, (char *)pdu->qs,
                                       COAP_OPT_URI_QUERY);
         /* uncomment when further options are added below ... */
-        /* last_optnum = COAP_OPT_URI_QUERY; */
+        last_optnum = COAP_OPT_URI_QUERY;
+        if (pdu->proxy[0] != '0') {
+            /* add Proxy-uri */
+            bufpos += coap_put_option(bufpos, last_optnum, COAP_OPT_PROXY_URI, (uint8_t*)pdu->proxy, strlen((char *)pdu->proxy));
+            /* uncomment when further options are added below ... */
+            /* last_optnum = COAP_OPT_PROXY_URI; */
+        }
     }
 
     /* write payload marker */
@@ -611,6 +617,7 @@ int gcoap_req_init(coap_pkt_t *pdu, uint8_t *buf, size_t len, unsigned code,
     pdu->hdr = (coap_hdr_t *)buf;
     memset(pdu->url, 0, NANOCOAP_URL_MAX);
     memset(pdu->qs, 0, NANOCOAP_QS_MAX);
+    memset(pdu->proxy, 0, NANOCOAP_PROXY_MAX);
 
     /* generate token */
 #if GCOAP_TOKENLEN
@@ -872,4 +879,14 @@ int gcoap_add_qstring(coap_pkt_t *pdu, const char *key, const char *val)
     return (int)qs_len;
 }
 
+int gcoap_add_proxy(coap_pkt_t *pdu, const char *proxy)
+{
+    size_t proxy_len = strlen(proxy);
+    if ((proxy_len) < NANOCOAP_PROXY_MAX - 1) {
+        memcpy(&pdu->proxy[0], proxy, proxy_len);
+        pdu->proxy[proxy_len] = '\0';
+        return (int)proxy_len;
+    }
+    else return -1;
+}
 /** @} */

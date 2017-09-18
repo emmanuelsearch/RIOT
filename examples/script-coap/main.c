@@ -43,6 +43,7 @@ static msg_t _main_msg_queue[MAIN_QUEUE_SIZE];
 
 extern void lwm2m_init(void);
 extern void lwm2m_register(void);
+extern void rmp_register(void);
 extern int _netif_config(int argc, char **argv);
 
 static const shell_command_t shell_commands[] = {
@@ -86,6 +87,8 @@ int main(void)
 
     /* register to LWM2M server */
     lwm2m_register();
+    xtimer_sleep(3);
+    rmp_register();
 
     /* launch javascript thread */
     thread_create(jsstack, sizeof(jsstack),
