@@ -1,6 +1,6 @@
 #include "jerryscript.h"
 
-#define JS_SCRIPT_MAX_SIZE             65
+#define JS_SCRIPT_MAX_SIZE             1600
 
 extern uint8_t internal_value;
 

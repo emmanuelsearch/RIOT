@@ -454,13 +454,17 @@ static ssize_t _write_options(coap_pkt_t *pdu, uint8_t *buf, size_t len)
 
     /* Uri-query for requests */
     if (coap_get_code_class(pdu) == COAP_CLASS_REQ) {
-        bufpos += coap_put_option_uri(bufpos, last_optnum, (char *)pdu->qs,
+        if (pdu->qs[0] != 0) {
+            bufpos += coap_put_option_uri(bufpos, last_optnum, (char *)pdu->qs,
                                       COAP_OPT_URI_QUERY);
-        /* uncomment when further options are added below ... */
-        last_optnum = COAP_OPT_URI_QUERY;
-        if (pdu->proxy[0] != '0') {
+            /* uncomment when further options are added below ... */
+            last_optnum = COAP_OPT_URI_QUERY;
+            }
+        if (pdu->proxy[0] != 0) {
+            size_t proxy_len = strlen((char *)pdu->proxy);
+            printf("putting in proxy uri length %u", proxy_len);
             /* add Proxy-uri */
-            bufpos += coap_put_option(bufpos, last_optnum, COAP_OPT_PROXY_URI, (uint8_t*)pdu->proxy, strlen((char *)pdu->proxy));
+            bufpos += coap_put_option(bufpos, last_optnum, COAP_OPT_PROXY_URI, (uint8_t*)pdu->proxy, proxy_len);
             /* uncomment when further options are added below ... */
             /* last_optnum = COAP_OPT_PROXY_URI; */
         }
