@@ -22,9 +22,18 @@ BOARD_BLACKLIST := arduino-duemilanove arduino-mega2560 arduino-uno chronos \
 CFLAGS += -DDEVELHELP
 
 # Set stack size to something (conservatively) enormous
-CFLAGS += -DTHREAD_STACKSIZE_MAIN=9092
+CFLAGS += -DTHREAD_STACKSIZE_MAIN=4096
+export JERRYHEAP=8
 
 USEMODULE += js
+
+USEMODULE += gnrc_netdev_default
+USEMODULE += auto_init_gnrc_netif
+# Specify the mandatory networking modules for IPv6 and UDP
+USEMODULE += gnrc_ipv6_router_default
+# Additional networking modules that can be dropped if not needed
+USEMODULE += gnrc_icmpv6_echo
+USEMODULE += gcoap
 
 include $(CURDIR)/../../Makefile.include
 
