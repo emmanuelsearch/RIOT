@@ -39,11 +39,13 @@
 static void _resp_handler(unsigned req_state, coap_pkt_t* pdu);
 static ssize_t _stats_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len);
 
-char lwm2m_resources[] = "<3/0>, <9/0>, <3303/0>, <3315/0>";
-char lwm2m_server_addr[] = "2a05:d014:677:2900:9786:f713:6820:e17e";
-char lwm2m_server_port[] = "6683";
-char device_id[10];
-char proxy[] = "http://tinyurl.com/rmp-api";
+const char lwm2m_resources[] = "<3/0>, <9/0>, <3303/0>, <3315/0>";
+const char lwm2m_server_addr[] = "2a05:d014:677:2900:9786:f713:6820:e17e";
+const char lwm2m_server_port[] = "6683";
+const char rmp_server_port[] = "5683";
+const char device_id[10];
+const char proxy[] = "http://tinyurl.com/rmp-api";
+const char rmp_msg[] = "registration";
 
 static ssize_t _riot_script_handler(coap_pkt_t *pkt, uint8_t *buf, size_t len)
 {
@@ -193,7 +195,7 @@ void lwm2m_register(void)
     printf("lwm2m: sending msg ID %u, %u bytes\n", coap_get_id(&pdu),
            (unsigned) len);
     printf("Resources registered: '%s'\n", lwm2m_resources);
-    if (!_send(&buf[0], len, lwm2m_server_addr, lwm2m_server_port)) {
+    if (!_send(&buf[0], len, (char *)lwm2m_server_addr, (char *)lwm2m_server_port)) {
         puts("lwm2m registration: msg send failed");
     }
 
@@ -206,16 +208,18 @@ void rmp_register(void)
     size_t len;
     
     /* register to RMP server */
-    gcoap_req_init(&pdu, &buf[0], GCOAP_PDU_BUF_SIZE + 64, 2, "/rd");
-    gcoap_add_proxy(&pdu, proxy);
-    memcpy(pdu.payload, lwm2m_resources, strlen(lwm2m_resources));
-    len = gcoap_finish(&pdu, strlen(lwm2m_resources), COAP_FORMAT_TEXT);
+    gcoap_req_init(&pdu, &buf[0], GCOAP_PDU_BUF_SIZE + 64, 2, "/coap");
+    /* Uncomment when proxy-uri is ready
+    gcoap_add_proxy(&pdu, proxy); */
+    gcoap_add_qstring(&pdu, "ep", device_id);
+    memcpy(pdu.payload, rmp_msg, strlen(rmp_msg));
+    len = gcoap_finish(&pdu, strlen(rmp_msg), COAP_FORMAT_TEXT);
     
     printf("rmp registration: sending msg ID %u, %u bytes\n", coap_get_id(&pdu),
            (unsigned) len);
-    printf("Payload: '%s'\n", lwm2m_resources);
-    if (!_send(&buf[0], len, lwm2m_server_addr, lwm2m_server_port)) {
-        puts("lwm2m registration: msg send failed");
+    printf("Payload: '%s'\n", rmp_msg);
+    if (!_send(&buf[0], len, (char *)lwm2m_server_addr, (char *)rmp_server_port)) {
+        puts("rmp registration: msg send failed");
     }
 
 }
@@ -224,7 +228,7 @@ void lwm2m_init(void)
 {
     
     uint8_t id[CPUID_LEN];
-    char *pos = device_id;
+    char *pos = (char *)device_id;
     
     cpuid_get(id);
     pos += fmt_str(pos, "RIOT-");
