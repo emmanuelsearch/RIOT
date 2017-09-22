@@ -35,7 +35,7 @@ USEMODULE += gnrc_ipv6_router_default
 USEMODULE += gnrc_icmpv6_echo
 USEMODULE += gcoap
 
-CFLAGS += -DGCOAP_PDU_BUF_SIZE=512 -DGNRC_PKTBUF_SIZE=2048
+CFLAGS += -DGCOAP_PDU_BUF_SIZE=768 -DGNRC_PKTBUF_SIZE=2304
 
 include $(CURDIR)/../../Makefile.include
 
