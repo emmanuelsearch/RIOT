@@ -22,7 +22,7 @@ BOARD_BLACKLIST := arduino-duemilanove arduino-mega2560 arduino-uno chronos \
 CFLAGS += -DDEVELHELP
 
 # Set stack size to something (conservatively) enormous
-CFLAGS += -DTHREAD_STACKSIZE_MAIN=4096 -g -fstack-usage -DGCOAP_STACK_SIZE=2560
+CFLAGS += -DTHREAD_STACKSIZE_MAIN=4096 -g -DGCOAP_STACK_SIZE=2560
 export JERRYHEAP=7
 
 USEMODULE += js
