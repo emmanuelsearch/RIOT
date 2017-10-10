@@ -39,6 +39,9 @@ char script[2048];
 #define MAIN_QUEUE_SIZE (4)
 static msg_t _main_msg_queue[MAIN_QUEUE_SIZE];
 
+/* import "ifconfig" shell command, used for printing addresses */
+extern int _netif_config(int argc, char **argv);
+
 void js_start(event_t *unused)
 {
     (void)unused;
@@ -78,6 +81,10 @@ int main(void)
     puts("waiting for network config");
     xtimer_sleep(3);
 
+    /* print network addresses */
+    puts("Configured network interfaces:");
+    _netif_config(0, NULL);
+    
     /* register to LWM2M server */
     puts("initializing coap, registering at lwm2m server");
     lwm2m_init();

@@ -26,6 +26,7 @@ CFLAGS += -DTHREAD_STACKSIZE_MAIN=4096 -g -DGCOAP_STACK_SIZE=2560
 export JERRYHEAP=7
 
 USEMODULE += js
+USEMODULE += shell_commands
 
 USEMODULE += gnrc_netdev_default
 USEMODULE += auto_init_gnrc_netif
