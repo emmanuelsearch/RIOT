@@ -25,7 +25,7 @@
 
 #include "msg.h"
 #include "xtimer.h"
-#include "lwm2m.h"
+#include "register.h"
 #include "js.h"
 #include "thread.h"
 
@@ -36,7 +36,7 @@
 static event_queue_t event_queue;
 
 char script[2048];
-char lwm2mkeepalive[100];
+char keepalive[100];
 
 #define MAIN_QUEUE_SIZE (4)
 static msg_t _main_msg_queue[MAIN_QUEUE_SIZE];
@@ -74,16 +74,18 @@ void js_restart(void)
     js_shutdown(&js_start_event);
 }
 
-void *lwm2mkeepalive_handler(void *arg)
+void *keepalive_handler(void *arg)
 {
     /* remove warning unused parameter arg */
     (void)arg;
     
-    lwm2m_init();
+    puts("initializing CoAP, registering to dashboard");
+    register_init();
     
     while(1) {
-        lwm2m_register();
         xtimer_sleep(180);
+        register_keepalive();
+        
     }
     return NULL;
 }
@@ -101,15 +103,12 @@ int main(void)
     puts("Configured network interfaces:");
     _netif_config(0, NULL);
     
-    /* register to LWM2M server */
-    puts("initializing coap, registering at lwm2m server");
-    
-    /* launch lwm2m registration & keepalive thread */
-    thread_create(lwm2mkeepalive, sizeof(lwm2mkeepalive),
+    /* launch dashboard registration & keepalive thread */
+    thread_create(keepalive, sizeof(keepalive),
                     THREAD_PRIORITY_MAIN - 1,
                     THREAD_CREATE_STACKTEST,
-                    lwm2mkeepalive_handler,
-                    NULL, "lwm2m keepalive");
+                    keepalive_handler,
+                    NULL, "dashboard keepalive");
 
     puts("setting up event queue");
     event_queue_init(&event_queue);
