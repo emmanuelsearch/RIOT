@@ -3,6 +3,7 @@ APPLICATION = riot_javascript
 
 # default BOARD environment
 BOARD ?= native
+DEFAULT_CHANNEL = 17
 
 BOARD_INSUFFICIENT_MEMORY := airfy-beacon b-l072z-lrwan1 \
                              calliope-mini cc2650stk maple-mini \
@@ -37,7 +38,7 @@ USEMODULE += gnrc_icmpv6_echo
 USEMODULE += gcoap
 
 CFLAGS += -DGCOAP_PDU_BUF_SIZE=1280 -DGNRC_PKTBUF_SIZE=2048
-
+CFLAGS += -DIEEE802154_DEFAULT_CHANNEL=$(DEFAULT_CHANNEL)
 include $(CURDIR)/../../Makefile.include
 
 JS_PATH := $(BINDIR)/js/$(MODULE)

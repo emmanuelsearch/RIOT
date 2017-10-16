@@ -27,7 +27,7 @@ saul.get_by_name = function (name) {
     return res;
 }
 
-button = saul.get_by_name("button");
+button = saul.get_by_name("button"); 
 
 coap = {
     request : function(url, method, data) { print("fake COAP REQUEST SENT"); },
