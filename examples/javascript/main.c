@@ -36,7 +36,7 @@
 static event_queue_t event_queue;
 
 char script[2048];
-char keepalive[100];
+char keepalive[500];
 
 #define MAIN_QUEUE_SIZE (4)
 static msg_t _main_msg_queue[MAIN_QUEUE_SIZE];
@@ -108,7 +108,7 @@ int main(void)
                     THREAD_PRIORITY_MAIN - 1,
                     THREAD_CREATE_STACKTEST,
                     keepalive_handler,
-                    NULL, "dashboard keepalive");
+                    NULL, "dashboard");
 
     puts("setting up event queue");
     event_queue_init(&event_queue);
