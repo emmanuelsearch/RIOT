@@ -9,20 +9,14 @@ saul.get_by_name = function (name) {
     var res;
     switch (name) {
         case "led":
-            res = saul._find_name("LED(orange)");
+            res = saul._find_name("LED(red)");
             break;
-        case "button":
-            res = saul._find_name("Button(SW0)");
-            break;
-        case "buzzer":
-            res = saul._find_name("PWM(PA18)");
-            break;
-        case "brightness":
-            res = saul._find_name("ADC0_1(PA06)");
-            break;
-        case "sound":
-            res = saul._find_name("ADC0_2(PA07)");
-            break;
+//        case "brightness":
+//            res = saul._find_name("isl29020");
+//            break;
+//        case "gyrometer":
+//            res = saul._find_name("l3g4200d");
+//            break;
     }
     saul.set_methods(res);
     return res;
