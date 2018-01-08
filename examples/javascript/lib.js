@@ -1,4 +1,4 @@
-print("Hello from lib.js");
+/* print("Hello from lib.js"); */
 
 timer.setInterval = function (callback, interval) {
     var next = timer.now() + interval;

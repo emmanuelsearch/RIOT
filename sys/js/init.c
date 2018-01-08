@@ -34,4 +34,5 @@ void js_init_objects(void)
     jerry_release_value(coap_object);
 
     jerry_release_value(global_object);
+    
 }

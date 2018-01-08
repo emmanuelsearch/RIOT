@@ -9,6 +9,7 @@
 
 event_queue_t *js_event_queue;
 static list_node_t js_native_refs;
+uint8_t js_needs_cleanup = 0;
 
 void js_add_external_handler(jerry_value_t object, const char *name, jerry_external_handler_t handler)
 {
@@ -166,7 +167,6 @@ static void js_shutdown_event_handler(event_t *event)
     (void)event;
 
     unsigned state = irq_disable();
-
     /* drain all js callbackevents from queue */
     while (event_get(js_event_queue));
 
@@ -175,15 +175,21 @@ static void js_shutdown_event_handler(event_t *event)
     while ((ref = (js_native_ref_t*) clist_lpop(&js_native_refs))) {
         jerry_release_value(ref->object);
     }
-
+    
     /* cleanup jerryscript engine */
-    jerry_cleanup();
+    if(js_needs_cleanup) {
+        jerry_cleanup();
+        }
+    else {
+        /* skipping jerry unnecessary cleanup */
+        js_needs_cleanup = 1;
+    }
 
     irq_restore(state);
-
     if (js_shutdown_done_event) {
         event_post(js_event_queue, js_shutdown_done_event);
     }
+
 }
 
 static event_t js_shutdown_event = { .handler = js_shutdown_event_handler };

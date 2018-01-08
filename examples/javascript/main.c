@@ -48,20 +48,16 @@ void js_start(event_t *unused)
 
     size_t script_len = strlen(script);
     if (script_len) {
-        puts("Initializing jerryscript engine...");
+        puts("(re)initializing jerryscript engine...");
         js_init();
-
-        puts("Executing lib.js...");
         js_run(lib_js, lib_js_len);
-
-        puts("Executing local.js...");
         js_run(local_js, local_js_len);
 
         puts("Executing script...");
         js_run((jerry_char_t*)script, script_len);
     }
     else {
-        puts("Emtpy script, not executing.");
+        puts("Emtpy script, nothing to execute yet.");
     }
 }
 

@@ -1,9 +1,12 @@
-//#0      ACT_SWITCH      LED(orange)
-//#1      SENSE_BTN       Button(SW0)
-//#2      ACT_ANY PWM(PA16)
-//#3      ACT_ANY PWM(PA18)
-//#4      SENSE_ANALOG    ADC0_1(PA06)
-//#5      SENSE_ANALOG    ADC0_2(PA07)
+//#0	ACT_SWITCH	LED(red)
+//#1	ACT_SWITCH	LED(green)
+//#2	ACT_SWITCH	LED(orange)
+//#3	SENSE_ACCEL	lsm303dlhc
+//#4	SENSE_MAG (saul_type 0x86)	lsm303dlhc
+//#5	SENSE_PRESS	lps331ap
+//#6	SENSE_TEMP (saul_type 0x82)	lps331ap
+//#7	SENSE_LIGHT	isl29020
+//#8	SENSE_GYRO	l3g4200d
 
 saul.get_by_name = function (name) {
     var res;
@@ -11,12 +14,24 @@ saul.get_by_name = function (name) {
         case "led":
             res = saul._find_name("LED(red)");
             break;
-//        case "brightness":
-//            res = saul._find_name("isl29020");
-//            break;
-//        case "gyrometer":
-//            res = saul._find_name("l3g4200d");
-//            break;
+        case "pressure":
+            res = saul._find_name("lps331ap");
+            break;
+        case "temperature":
+            res = saul._get_one(0x82);
+            break;
+        case "accelerometer":
+            res = saul._find_name("lsm303dlhc");
+            break;
+        case "magnetometer":
+            res = saul._get_one(0x86); 
+            break;
+        case "brightness":
+            res = saul._find_name("isl29020");
+            break;
+        case "gyrometer":
+            res = saul._find_name("l3g4200d");
+            break;
     }
     saul.set_methods(res);
     return res;

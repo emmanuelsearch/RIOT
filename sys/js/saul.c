@@ -115,8 +115,10 @@ static JS_EXTERNAL_HANDLER(saul_get_one) {
 
     saul_reg_t *entry = saul_reg_find_type(jerry_get_number_value(args_p[0]));
     if (entry) {
+        DEBUG("saul_get_one(): found entry for type \"%x\"\n", (uint8_t)args_p[0]);
         return js_saul_reg_create(entry);
     } else {
+        DEBUG("saul_get_one(): no found entry for type \"%x\"\n", (uint8_t)args_p[0]);
         return jerry_create_undefined();
     }
 }
