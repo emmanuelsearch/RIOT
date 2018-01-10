@@ -16,6 +16,8 @@ The below instructions assume that you have:
 
 ### Setup
 
+![RIOT Javascript Container Example Setup](https://github.com/emmanuelsearch/RIOT/blob/riot.js.demo.iotlab/examples/javascript/setup-iotlab.png)
+
 1. In RIOT/examples/javascript compile this example with the command 
 ```
 BOARD=iotlab-m3 make
