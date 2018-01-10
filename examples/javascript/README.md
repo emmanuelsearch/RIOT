@@ -2,25 +2,26 @@
 
 This example shows how to push Javascript logic, sent via CoAP, to be executed in a tiny software container hosted on an IoT device running RIOT. 
 
-The below instructions detail how to run the example remotely on hardware available on the open-access testbed [IoT-Lab](https://www.iot-lab.info).
-Note however that the same example can run on your own hardware (for instance see this [guide](https://github.com/emmanuelsearch/RIOT/blob/js-coap-samr21/examples/script-coap/README.md) which uses a RasPi as border router and a SAMR21 as IoT device).
+While the below instructions show how to run the example on hardware available remotely on the open-access testbed [IoT-Lab](https://www.iot-lab.info), the same example can run on your own RIOT-supported hardware. For instance see this other [guide](https://github.com/emmanuelsearch/RIOT/blob/js-coap-samr21/examples/script-coap/README.md) which uses a RasPi as border router and a SAMR21 as IoT device.
 
 
 ### Preliminaries
 The below instructions assume that you have: 
 
-- an account on the (free) open-access testbed [IoT-Lab](https://www.iot-lab.info)
-- a CoAP client, e.g. Firefox browser extension [Copper](https://addons.mozilla.org/en-US/firefox/addon/copper-270430/)
-- IPv6 connectivity e.g. using a free tunnel provider such as [Hurricane Electric](https://tunnelbroker.net)
-- the setup to compile RIOT (if needed refer to the beginner [tutorial](https://github.com/RIOT-OS/Tutorials/blob/master/README.md))
+1. the setup to compile RIOT (if needed refer to the beginner [tutorial](https://github.com/RIOT-OS/Tutorials/blob/master/README.md))
+2. an account on the (free) open-access testbed [IoT-Lab](https://www.iot-lab.info)
+1. a CoAP client, e.g. Firefox browser extension [Copper](https://addons.mozilla.org/en-US/firefox/addon/copper-270430/)
+1. IPv6 connectivity e.g. using a free tunnel provider such as [Hurricane Electric](https://tunnelbroker.net)
+1. (if not done already git clone this [repo](https://github.com/emmanuelsearch/RIOT.git) and check out the branch *riot.js.demo.iotlab*)
 
 ### Setup
 
-1. Compile this example with the command 
+1. In RIOT/examples/javascript compile this example with the command 
 ```
 BOARD=iotlab-m3 make
 ```
-1. The resulting binray is then *riot_javascript.elf* located in RIOT/javascript/bin/iotlab-m3/
+
+1. The resulting binary is then *riot_javascript.elf* located in RIOT/examples/javascript/bin/iotlab-m3/
 
 1. Reserve & program two nodes on IoT-lab following their [Public IPv6 tutorial](https://www.iot-lab.info/tutorials/riot-public-ipv66lowpan-network-with-m3-nodes/). This step provides you with an IoT device (the first node) connected wirelessly to the global IPv6 network via the second node acting as border router (using 6LoWPAN and IEEE 802.15.4 radio).
 
@@ -33,7 +34,7 @@ BOARD=iotlab-m3 make
 
 In your CoAP client, type or copy/paste your Javascript as payload of a PUT request to the CoAP resource */riot/script* on the IoT-lab M3 node (using the IPv6 address of the node obtained as indicated above at setup).
 
-As an example of script, you may first try:
+As an example of script, you may first try to push and execute the simple program:
 ```
 print('Hello RIOT container!');
 ```
@@ -42,7 +43,7 @@ In your terminal window with the RIOT shell running on the IoT device, you shoul
 
 You may repeat this procedure at will, pushing arbitrary scripts via CoAP. For instance, see below for a more elaborate script example.
 
-### Sample script with sensor/actuator access
+### Sample Javascript with sensor/actuator access
 
 Using the above procedure, you can try to push the below script of instance:
 
@@ -69,5 +70,3 @@ print("Modified LED status = " + this.led.read());
 this.led.write(1);
 ```
 
-### Acknowledgement
-This example uses [Jerryscript](https://github.com/jerryscript-project/jerryscript) which provides full ECMAScript 5.1 support on RIOT devices (kudos guys!).
