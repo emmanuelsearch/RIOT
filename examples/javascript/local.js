@@ -1,3 +1,14 @@
+/*
+ * Copyright (C) 2018 Inria Emmanuel Baccelli <emmanuel.baccelli@inria.fr>
+ *               2017 Kaspar Schleiser <kaspar@schleiser.de>
+ *
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
+ */
+
+
+// Memo of SAUL entries on IoT-Lab M3 open nodes
 //#0	ACT_SWITCH	LED(red)
 //#1	ACT_SWITCH	LED(green)
 //#2	ACT_SWITCH	LED(orange)
