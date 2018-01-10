@@ -2,6 +2,8 @@
 
 This example shows how to push Javascript logic, sent via CoAP, to be executed in a tiny software container hosted on an IoT device running RIOT. 
 
+If you need to reference this work in an academic context, please cite: *E. Baccelli, J. Doerr, S. Kikuchi, FJA Padilla, K. Schleiser, I. Thomas, ''Scripting Over-The-Air: Towards Containers on Low-end Devices in the Internet of Things'', in IEEE PerCom, 2018 (to appear)*.
+
 While the below instructions show how to run the example on hardware available remotely on the open-access testbed [IoT-Lab](https://www.iot-lab.info), the same example can run on your own RIOT-supported hardware. For instance see this other [guide](https://github.com/emmanuelsearch/RIOT/blob/js-coap-samr21/examples/script-coap/README.md) which uses a RasPi as border router and a SAMR21 as IoT device.
 
 
