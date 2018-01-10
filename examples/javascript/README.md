@@ -47,7 +47,7 @@ You may repeat this procedure at will, pushing arbitrary scripts via CoAP. For i
 
 ### Sample Javascript with sensor/actuator access
 
-Using the above procedure, you can try to push the below script of instance:
+Using the above procedure, you can try to push the below script, for instance:
 
 ```
 // Get handles on sensors and actuators
