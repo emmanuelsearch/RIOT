@@ -32,6 +32,7 @@
 /* include headers generated from *.js */
 #include "lib.js.h"
 #include "local.js.h"
+#include "main.js.h"
 
 static event_queue_t event_queue;
 
@@ -53,10 +54,10 @@ void js_start(event_t *unused)
         puts("Initializing jerryscript engine...");
         js_init();
 
-        puts("Executing lib.js...");
+        /* puts("Executing lib.js..."); */
         js_run(lib_js, lib_js_len);
 
-        puts("Executing local.js...");
+        /* puts("Executing local.js..."); */
         js_run(local_js, local_js_len);
 
         puts("Executing script...");
