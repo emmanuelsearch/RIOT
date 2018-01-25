@@ -38,7 +38,7 @@ static void _resp_handler(unsigned req_state, coap_pkt_t *pdu);
 
 static char alive_payload[] = "Alive";
 static char reset_payload[] = "reset";
-static char dashboard_addr[] = "fd00:Abad:1e:102::1";
+static char dashboard_addr[] = "affe::1";
 static char dashboard_port[] = "5683";
 static char device_id[32];
 
