@@ -27,6 +27,10 @@
 #include "net/gcoap.h"
 #include "od.h"
 #include "fmt.h"
+#include "saul_reg.h"
+
+#include "board.h"
+#include "periph/gpio.h"
 
 #include "cpu_conf.h"
 #include "periph/cpuid.h"
@@ -96,7 +100,7 @@ static ssize_t _riot_script_handler(coap_pkt_t *pkt, uint8_t *buf, size_t len)
 {
     ssize_t rsp_len = 0;
     unsigned code = COAP_CODE_EMPTY;
-    const char *js_mock_script = "script is fine!";
+    const char *js_mock_script = "Enter script here!";
 
     /* read coap method type in packet */
     unsigned method_flag = coap_method2flag(coap_get_code_detail(pkt));
@@ -206,13 +210,140 @@ static ssize_t _name_handler(coap_pkt_t *pkt, uint8_t *buf, size_t len)
 
 }
 
+static ssize_t _illuminance_handler(coap_pkt_t *pkt, uint8_t *buf, size_t len)
+{
+    ssize_t rsp_len = 4;
+    char response[8] = "NULL";
+    /* find and read saul entry for the light sensor */
+    phydat_t res;
+    saul_reg_t *light_sensor = saul_reg_find_name("ADC0_1(PA06)");
+    saul_reg_read(light_sensor, &res);
+    
+    if(light_sensor) {
+        /* convert uint16 into uint8 */
+        uint16_t light = 1023 - res.val[0];
+        sprintf((char*)response, "%i lm", light);
+        rsp_len = 7;
+    }
+    
+    unsigned code = COAP_CODE_EMPTY;
+
+    /* read coap method type in packet */
+    unsigned method_flag = coap_method2flag(coap_get_code_detail(pkt));
+
+    switch (method_flag) {
+        case COAP_GET:
+            code = COAP_CODE_205;
+            break;
+        case COAP_POST:
+        case COAP_PUT:
+            break;
+    }
+
+
+    return coap_reply_simple(pkt, code, buf, len,
+                             COAP_FORMAT_TEXT, (uint8_t *)response, rsp_len);
+
+/*    return gcoap_response(pkt, buf, len, code);
+ */
+
+}
+
+static ssize_t _noise_handler(coap_pkt_t *pkt, uint8_t *buf, size_t len)
+{
+    ssize_t rsp_len = 4;
+    char response[8] = "NULL";
+    /* find and read saul entry for the light sensor */
+    phydat_t res;
+    saul_reg_t *noise_sensor = saul_reg_find_name("ADC0_2(PA07)");
+    saul_reg_read(noise_sensor, &res);
+    
+    if(noise_sensor) {
+        /* convert uint16 into uint8 */
+        uint16_t noise = res.val[0] +1;
+        sprintf((char*)response, "%i  ", noise);
+        rsp_len = 4;
+    }
+    
+    unsigned code = COAP_CODE_EMPTY;
+
+    /* read coap method type in packet */
+    unsigned method_flag = coap_method2flag(coap_get_code_detail(pkt));
+
+    switch (method_flag) {
+        case COAP_GET:
+            code = COAP_CODE_205;
+            break;
+        case COAP_POST:
+        case COAP_PUT:
+            break;
+    }
+
+
+    return coap_reply_simple(pkt, code, buf, len,
+                             COAP_FORMAT_TEXT, (uint8_t *)response, rsp_len);
+
+/*    return gcoap_response(pkt, buf, len, code);
+ */
+
+}
+
+ssize_t led_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len)
+{
+    ssize_t p = 0;
+    char rsp[16];
+    unsigned code = COAP_CODE_EMPTY;
+
+    /* read coap method type in packet */
+    unsigned method_flag = coap_method2flag(coap_get_code_detail(pdu));
+
+    switch(method_flag) {
+    case COAP_GET:
+    {
+        p += sprintf(rsp, "%i", gpio_read(LED0_PIN) == 0);
+        DEBUG("[DEBUG] Returning LED value '%s'\n", rsp);
+        code = COAP_CODE_205;
+        break;
+    }
+    case COAP_PUT:
+    case COAP_POST:
+    {
+        /* convert the payload to an integer and update the internal value */
+        char payload[16] = { 0 };
+        memcpy(payload, (char*)pdu->payload, pdu->payload_len);
+        uint8_t val = strtol(payload, NULL, 10);
+        if ( (pdu->payload_len == 1) &&
+             ((val == 1) || (val == 0))) {
+            /* update LED value */
+            DEBUG("[DEBUG] Update LED value '%i'\n", 1 - val);
+            gpio_write(LED0_PIN, 1 - val);
+            code = COAP_CODE_CHANGED;
+            p += sprintf(rsp, "led:%i", val);
+        }
+        else {
+            DEBUG("[ERROR] Wrong LED value given '%i'\n", val);
+            code = COAP_CODE_BAD_REQUEST;
+        }
+        break;
+    }
+    default:
+        DEBUG("[Error] Bad request\n");
+        code = COAP_CODE_BAD_REQUEST;
+        break;
+    }
+
+    return coap_reply_simple(pdu, code, buf, len, COAP_FORMAT_TEXT, (uint8_t*)rsp, p);
+}
+
 /* CoAP resources */
 static const coap_resource_t _resources[] = {
     { "/board", COAP_GET | COAP_PUT | COAP_POST, _board_handler },
+    { "/illuminance", COAP_GET, _illuminance_handler },
     { "/js", COAP_GET | COAP_PUT | COAP_POST, _riot_script_handler },
+    { "/led", COAP_GET | COAP_POST | COAP_PUT, led_handler },
     { "/name", COAP_GET | COAP_PUT | COAP_POST, _name_handler },
-    { "/os", COAP_GET | COAP_PUT | COAP_POST, _os_handler },
-    
+    { "/noise", COAP_GET | COAP_PUT | COAP_POST, _noise_handler },
+    { "/os", COAP_GET | COAP_PUT | COAP_POST, _os_handler }
 };
 static gcoap_listener_t _listener = {
     (coap_resource_t *)&_resources[0],
