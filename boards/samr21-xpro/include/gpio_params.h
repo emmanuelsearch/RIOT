@@ -44,6 +44,11 @@ static const  saul_gpio_params_t saul_gpio_params[] =
         .pin  = BTN0_PIN,
         .mode = BTN0_MODE
     },
+    {
+        .name = "ALARM",
+        .pin = GPIO_PIN(1,23),
+        .mode = GPIO_OUT
+    },
 };
 
 #ifdef __cplusplus

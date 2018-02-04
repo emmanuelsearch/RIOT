@@ -45,6 +45,7 @@ static char reset_payload[] = "reset";
 static char dashboard_addr[] = "affe::1";
 static char dashboard_port[] = "5683";
 static char device_id[32];
+static uint8_t sensor_choice = 0;
 
 extern char script[];
 extern void js_restart(void);
@@ -222,7 +223,7 @@ static ssize_t _illuminance_handler(coap_pkt_t *pkt, uint8_t *buf, size_t len)
     if(light_sensor) {
         /* convert uint16 into uint8 */
         uint16_t light = 1023 - res.val[0];
-        sprintf((char*)response, "%i lm", light);
+        sprintf((char*)response, "%ilx", light);
         rsp_len = 7;
     }
     
@@ -260,7 +261,7 @@ static ssize_t _noise_handler(coap_pkt_t *pkt, uint8_t *buf, size_t len)
     
     if(noise_sensor) {
         /* convert uint16 into uint8 */
-        uint16_t noise = res.val[0] +1;
+        uint16_t noise = res.val[0];
         sprintf((char*)response, "%i  ", noise);
         rsp_len = 4;
     }
@@ -425,6 +426,12 @@ void register_keepalive(void)
     uint8_t buf[GCOAP_PDU_BUF_SIZE];
     coap_pkt_t pdu;
     size_t len;
+    char response[128] = "NULL";
+    phydat_t res;
+    saul_reg_t *noise_sensor;
+    saul_reg_t *light_sensor;
+    uint16_t noise = 14;
+    uint16_t light = 47;
 
     /* keepalive registration to dashboard */
     gcoap_req_init(&pdu, &buf[0], GCOAP_PDU_BUF_SIZE, 2, "/alive");
@@ -437,6 +444,50 @@ void register_keepalive(void)
         puts("Dashboard keepalive: msg send failed");
     }
 
+    /* update sensor values */
+    puts("Sending sensor values update");
+
+    noise_sensor = saul_reg_find_name("ADC0_2(PA07)");
+    light_sensor = saul_reg_find_name("ADC0_1(PA06)");
+    
+    if(sensor_choice) {  
+        if(noise_sensor) {
+            saul_reg_read(noise_sensor, &res);
+            noise = res.val[0];
+                        
+            sprintf((char*)response, "noise:%i", noise);
+            len = 9;
+/*
+            saul_reg_read(light_sensor, &res);
+            light = 1023 - res.val[0];
+            sprintf((char*)response, "{\"type\":\"noise\",\"values\":[%i]},{\"type\":\"illuminance\",\"values\":[%ilx]}", noise, light); 
+            len = 74;
+           */ 
+            gcoap_req_init(&pdu, &buf[0], GCOAP_PDU_BUF_SIZE, 2, "/server");
+            memcpy(pdu.payload, (char*)response, len);
+            len = gcoap_finish(&pdu, len, COAP_FORMAT_TEXT);
+            if (!_send(&buf[0], len, dashboard_addr, dashboard_port)) {
+                puts("Sensor data update: msg send failed");
+            }
+        }
+    sensor_choice = (sensor_choice + 1)%2;
+    }
+    else {
+        if(light_sensor) {
+            saul_reg_read(light_sensor, &res);
+            light = 1023 - res.val[0];
+            sprintf((char*)&response[0], "illuminance:%ilx", light);
+            len = 18;
+            gcoap_req_init(&pdu, &buf[0], GCOAP_PDU_BUF_SIZE, 2, "/server");
+            memcpy(pdu.payload, (char*)response, len);
+            len = gcoap_finish(&pdu, len, COAP_FORMAT_TEXT);
+            if (!_send(&buf[0], len, dashboard_addr, dashboard_port)) {
+             /* puts("Light sensor update: msg send failed"); */
+            }
+        }
+    sensor_choice = (sensor_choice + 1)%2;
+    }
+    
 }
 
 void register_init(void)

@@ -36,7 +36,7 @@
 
 static event_queue_t event_queue;
 
-char script[2048];
+char script[1024];
 char keepalive[500];
 
 #define MAIN_QUEUE_SIZE (4)
@@ -81,7 +81,7 @@ void *keepalive_handler(void *arg)
     (void)arg;
     
     while(1) {
-        xtimer_sleep(25);
+        xtimer_sleep(1);
         register_keepalive();
         
     }
@@ -95,7 +95,7 @@ int main(void)
     printf("This board features a(n) %s MCU.\n", RIOT_MCU);
 
     puts("waiting for network config");
-    xtimer_sleep(3);
+    xtimer_sleep(1);
 
     /* print network addresses */
     puts("Configured network interfaces:");

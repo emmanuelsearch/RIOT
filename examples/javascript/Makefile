@@ -3,7 +3,7 @@ APPLICATION = riot_javascript
 
 # default BOARD environment
 BOARD ?= native
-DEFAULT_CHANNEL = 17
+DEFAULT_CHANNEL = 26
 
 BOARD_INSUFFICIENT_MEMORY := airfy-beacon b-l072z-lrwan1 \
                              calliope-mini cc2650stk maple-mini \
