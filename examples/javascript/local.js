@@ -19,7 +19,8 @@ saul.get_by_name = function (name) {
     var res;
     switch (name) {
         case "led":
-            res = saul._find_name("LED(orange)");
+//            res = saul._find_name("LED(orange)");
+            res = saul._find_name("ALARM");
             break;
         case "button":
             res = saul._find_name("Button(SW0)");

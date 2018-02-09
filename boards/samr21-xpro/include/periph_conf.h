@@ -192,7 +192,7 @@ static const spi_conf_t spi_config[] = {
         .miso_pad = SPI_PAD_MISO_0,
         .mosi_pad = SPI_PAD_MOSI_2_SCK_3
     },
-    {
+/*    {
         .dev      = &SERCOM5->SPI,
         .miso_pin = GPIO_PIN(PB, 2),
         .mosi_pin = GPIO_PIN(PB, 22),
@@ -203,6 +203,7 @@ static const spi_conf_t spi_config[] = {
         .miso_pad = SPI_PAD_MISO_0,
         .mosi_pad = SPI_PAD_MOSI_2_SCK_3
     }
+    */
 };
 
 #define SPI_NUMOF           (sizeof(spi_config) / sizeof(spi_config[0]))
