@@ -37,9 +37,7 @@
 static void _resp_handler(unsigned req_state, coap_pkt_t *pdu);
 
 static char lwm2m_resources[] = "<3/0>, <9/0>, <3303/0>, <3315/0>";
-/* static char lwm2m_server_addr[] = "2a05:d014:677:2900:9786:f713:6820:e17e"; */
 static char lwm2m_server_addr[] = "2001:41d0:8:95ce::1";
-/* static char lwm2m_server_port[] = "6683"; */
 static char lwm2m_server_port[] = "5683";
 static char device_id[10];
 
