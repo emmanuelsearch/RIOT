@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2018 Freie Universität Berlin
  *               2018 Codecoup
+ *               2018 Inria
  *
  * This file is subject to the terms and conditions of the GNU Lesser
  * General Public License v2.1. See the file LICENSE in the top level
@@ -16,6 +17,7 @@
  *
  * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
  * @author      Andrzej Kaczmarek <andrzej.kaczmarek@codecoup.pl>
+ * @author      Emmanuel Baccelli <emmanuel.baccelli@inria.fr>
  *
  * @}
  */
@@ -116,7 +118,7 @@ int main(void)
     ble_svc_gatt_init();
     
     /* add gatt services */
-    puts("about to add services ");
+    puts("Starting services ");
     int rc = gatt_svr_init();
     assert(rc == 0);
 
