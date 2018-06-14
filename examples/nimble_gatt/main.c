@@ -20,20 +20,11 @@
  * @}
  */
 
-#include <stdio.h>
-#include <string.h>
+#include "ble_temperature.h"
 
-#include "nimble_riot.h"
-
-#include "nimble/nimble_port.h"
-#include "host/ble_hs.h"
-#include "host/util/util.h"
-#include "services/gap/ble_svc_gap.h"
-#include "services/gatt/ble_svc_gatt.h"
 
 static const char device_name[] = "NimBLE on RIOT";
 static uint8_t own_addr_type;
-
 
 static void start_advertise(void);
 
@@ -123,10 +114,18 @@ int main(void)
     nimble_port_init();
     ble_svc_gap_init();
     ble_svc_gatt_init();
+    
+    /* add gatt services */
+    puts("about to add services ");
+    int rc = gatt_svr_init();
+    assert(rc == 0);
 
     /* set the device name */
     ble_svc_gap_device_name_set(device_name);
+    
 
+
+  /*  ps(); */
     /* and finally run NimBLE's host event loop. The event loop contains a pre-
      * configured event which will trigger the hosts initialization */
     nimble_port_run();
