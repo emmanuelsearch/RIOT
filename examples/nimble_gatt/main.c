@@ -23,12 +23,57 @@
  */
 
 #include "ble_temperature.h"
+#include "thread.h"
+#include "xtimer.h"
 
+char notificationstack[THREAD_STACKSIZE_MAIN];
+int static_sensor_value;
 
-static const char device_name[] = "NimBLE on RIOT";
+/* static const char device_name[] = "NimBLE on RIOT"; */
+static const char device_name[] = "SensorTag RIOT";
 static uint8_t own_addr_type;
 
 static void start_advertise(void);
+
+void *notificationthread_handler(void *arg)
+{
+    /* remove warning unused parameter arg */
+    (void)arg;
+    uint16_t chr_val_handle;
+    int rc=0;
+    /* static_sensor_value = 20; */
+    xtimer_sleep(1);
+    int counter = 0;
+    
+    while(1) {
+        if (counter == 5) {
+            puts("Issuing value notification: Temperature");
+            rc = ble_gatts_find_chr(&gatt_svr_chr_temp_serv_uuid.u, &gatt_svr_chr_temp_data_uuid.u, NULL, &chr_val_handle);
+            }
+        if (counter == 5) {
+            puts("Issuing value notification: Humidity");
+            rc = ble_gatts_find_chr(&gatt_svr_chr_hum_serv_uuid.u, &gatt_svr_chr_hum_data_uuid.u, NULL, &chr_val_handle);
+            }
+        if (counter == 5) {
+            puts("Issuing value notification: Pressure");
+            ble_gatts_find_chr(&gatt_svr_chr_press_serv_uuid.u, &gatt_svr_chr_press_data_uuid.u, NULL, &chr_val_handle);
+            }
+        if (counter == 3) {
+            puts("Issuing value notification: Optical");
+            rc = ble_gatts_find_chr(&gatt_svr_chr_opt_serv_uuid.u, &gatt_svr_chr_opt_data_uuid.u, NULL, &chr_val_handle);
+            }
+    if(rc == 0){
+        ble_gatts_chr_updated(chr_val_handle);
+        }
+        else puts("Error: finding service handle");
+    
+    counter++;
+    counter = counter%4;
+    xtimer_sleep(5);
+    }
+
+    return NULL;
+}
 
 static void put_ad(uint8_t ad_type, uint8_t ad_len, const void *ad, uint8_t *buf,
                    uint8_t *len)
@@ -125,7 +170,12 @@ int main(void)
     /* set the device name */
     ble_svc_gap_device_name_set(device_name);
     
-
+    /* launch notification thread */
+    thread_create(notificationstack, sizeof(notificationstack),
+                    THREAD_PRIORITY_MAIN - 1,
+                    THREAD_CREATE_STACKTEST,
+                    notificationthread_handler,
+                    NULL, "notification thread");
 
   /*  ps(); */
     /* and finally run NimBLE's host event loop. The event loop contains a pre-

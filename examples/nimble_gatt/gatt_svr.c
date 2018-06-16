@@ -25,9 +25,10 @@
 
 #include "ble_temperature.h"
 
-static const char *manuf_name = "RIOT";
-static const char *model_num = "NimBLE on RIOT";
+static const char *manuf_name = "Texas Instruments";
+static const char *model_num = "CC2650 SensorTag";
 uint16_t hrs_hrm_handle;
+uint16_t variation = 0;
 
 static int
 gatt_svr_chr_access_temperature_data(uint16_t conn_handle, uint16_t attr_handle,
@@ -45,32 +46,15 @@ static int
 gatt_svr_chr_access_device_info(uint16_t conn_handle, uint16_t attr_handle,
                                 struct ble_gatt_access_ctxt *ctxt, void *arg);
 
-static const struct ble_gatt_svc_def gatt_svr_svcs[] = {
-    {
-        /* Service: Heart-rate */
-        .type = BLE_GATT_SVC_TYPE_PRIMARY,
-        .uuid = (ble_uuid_t*)&gatt_svr_chr_temp_serv_uuid.u,
-        .characteristics = (struct ble_gatt_chr_def[]) { {
-            /* Characteristic: Temperature data */
-            .uuid = (ble_uuid_t*)&gatt_svr_chr_temp_data_uuid.u,
-            .access_cb = gatt_svr_chr_access_temperature_data,
-            .val_handle = &hrs_hrm_handle,
-            .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_NOTIFY,
-        }, {
-            /* Characteristic: Temperature conf */
-            .uuid = (ble_uuid_t*)&gatt_svr_chr_temp_conf_uuid.u,
-            .access_cb = gatt_svr_chr_access_temperature_conf,
-            .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_WRITE,
-        }, {
-            /* Characteristic: Temperature peri */
-            .uuid = (ble_uuid_t*)&gatt_svr_chr_temp_peri_uuid.u,
-            .access_cb = gatt_svr_chr_access_temperature_peri,
-            .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_WRITE,
-        }, {
-            0, /* No more characteristics in this service */
-        }, }
-    },
+static int
+gatt_svr_chr_access_io_data(uint16_t conn_handle, uint16_t attr_handle,
+                               struct ble_gatt_access_ctxt *ctxt, void *arg);
 
+static int
+gatt_svr_chr_access_io_conf(uint16_t conn_handle, uint16_t attr_handle,
+                               struct ble_gatt_access_ctxt *ctxt, void *arg);
+
+static const struct ble_gatt_svc_def gatt_svr_svcs[] = {
     {
         /* Service: Device Information */
         .type = BLE_GATT_SVC_TYPE_PRIMARY,
@@ -89,18 +73,142 @@ static const struct ble_gatt_svc_def gatt_svr_svcs[] = {
             0, /* No more characteristics in this service */
         }, }
     },
-
+    {
+        /* Service: Temperature */
+        .type = BLE_GATT_SVC_TYPE_PRIMARY,
+        .uuid = (ble_uuid_t*)&gatt_svr_chr_temp_serv_uuid.u,
+        .characteristics = (struct ble_gatt_chr_def[]) { {
+            /* Characteristic: Temperature data */
+            .uuid = (ble_uuid_t*)&gatt_svr_chr_temp_data_uuid.u,
+            .access_cb = gatt_svr_chr_access_temperature_data,
+         /*   .val_handle = &hrs_hrm_handle, */
+            .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_NOTIFY,
+        }, {
+            /* Characteristic: Temperature conf */
+            .uuid = (ble_uuid_t*)&gatt_svr_chr_temp_conf_uuid.u,
+            .access_cb = gatt_svr_chr_access_temperature_conf,
+            .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_WRITE,
+        }, {
+            /* Characteristic: Temperature peri */
+            .uuid = (ble_uuid_t*)&gatt_svr_chr_temp_peri_uuid.u,
+            .access_cb = gatt_svr_chr_access_temperature_peri,
+            .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_WRITE,
+        }, {
+            0, /* No more characteristics in this service */
+        }, }
+    },
         {
+        /* Service: Humidity */
+        .type = BLE_GATT_SVC_TYPE_PRIMARY,
+        .uuid = (ble_uuid_t*)&gatt_svr_chr_hum_serv_uuid.u,
+        .characteristics = (struct ble_gatt_chr_def[]) { {
+            /* Characteristic: Humidity data */
+            .uuid = (ble_uuid_t*)&gatt_svr_chr_hum_data_uuid.u,
+            /* TO DO CALL BACK */
+            .access_cb = gatt_svr_chr_access_temperature_data,
+         /*   .val_handle = &hrs_hrm_handle, */
+            .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_NOTIFY,
+        }, {
+            /* Characteristic: Humidity conf */
+            .uuid = (ble_uuid_t*)&gatt_svr_chr_hum_conf_uuid.u,
+            /* TO DO CALL BACK */
+            .access_cb = gatt_svr_chr_access_temperature_conf,
+            .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_WRITE,
+        }, {
+            /* Characteristic: Humidity peri */
+            .uuid = (ble_uuid_t*)&gatt_svr_chr_hum_peri_uuid.u,
+            /* TO DO CALL BACK */
+            .access_cb = gatt_svr_chr_access_temperature_peri,
+            .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_WRITE,
+        }, {
+            0, /* No more characteristics in this service */
+        }, }
+    },
+        {
+        /* Service: Pressure */
+        .type = BLE_GATT_SVC_TYPE_PRIMARY,
+        .uuid = (ble_uuid_t*)&gatt_svr_chr_press_serv_uuid.u,
+        .characteristics = (struct ble_gatt_chr_def[]) { {
+            /* Characteristic: Pressure data */
+            .uuid = (ble_uuid_t*)&gatt_svr_chr_press_data_uuid.u,
+            /* TO DO CALL BACK */
+            .access_cb = gatt_svr_chr_access_temperature_data,
+         /*   .val_handle = &hrs_hrm_handle, */
+            .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_NOTIFY,
+        }, {
+            /* Characteristic: Pressure conf */
+            .uuid = (ble_uuid_t*)&gatt_svr_chr_press_conf_uuid.u,
+            /* TO DO CALL BACK */
+            .access_cb = gatt_svr_chr_access_temperature_conf,
+            .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_WRITE,
+        }, {
+            /* Characteristic: Pressure peri */
+            .uuid = (ble_uuid_t*)&gatt_svr_chr_press_peri_uuid.u,
+            /* TO DO CALL BACK */
+            .access_cb = gatt_svr_chr_access_temperature_peri,
+            .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_WRITE,
+        }, {
+            0, /* No more characteristics in this service */
+        }, }
+    },
+        {
+        /* Service: Optical */
+        .type = BLE_GATT_SVC_TYPE_PRIMARY,
+        .uuid = (ble_uuid_t*)&gatt_svr_chr_opt_serv_uuid.u,
+        .characteristics = (struct ble_gatt_chr_def[]) { {
+            /* Characteristic: Optical data */
+            .uuid = (ble_uuid_t*)&gatt_svr_chr_opt_data_uuid.u,
+            /* TO DO CALL BACK */
+            .access_cb = gatt_svr_chr_access_temperature_data,
+         /*   .val_handle = &hrs_hrm_handle, */
+            .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_NOTIFY,
+        }, {
+            /* Characteristic: Optical conf */
+            .uuid = (ble_uuid_t*)&gatt_svr_chr_opt_conf_uuid.u,
+            /* TO DO CALL BACK */
+            .access_cb = gatt_svr_chr_access_temperature_conf,
+            .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_WRITE,
+        }, {
+            /* Characteristic: Optical peri */
+            .uuid = (ble_uuid_t*)&gatt_svr_chr_opt_peri_uuid.u,
+            /* TO DO CALL BACK */
+            .access_cb = gatt_svr_chr_access_temperature_peri,
+            .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_WRITE,
+        }, {
+            0, /* No more characteristics in this service */
+        }, }
+    },
+        {
+        /* Service: IO */
+        .type = BLE_GATT_SVC_TYPE_PRIMARY,
+        .uuid = (ble_uuid_t*)&gatt_svr_chr_io_serv_uuid.u,
+        .characteristics = (struct ble_gatt_chr_def[]) { {
+            /* Characteristic: IO data(?) */
+            .uuid = (ble_uuid_t*)&gatt_svr_chr_io_data_uuid.u,
+            .access_cb = gatt_svr_chr_access_io_data,
+            .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_WRITE,
+        }, {
+            /* Characteristic: IO conf (?) */
+            .uuid = (ble_uuid_t*)&gatt_svr_chr_io_conf_uuid.u,
+            .access_cb = gatt_svr_chr_access_io_conf,
+            .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_WRITE,
+        }, {
+            0, /* No more characteristics in this service */
+        }, }
+    },
+    {
             0, /* No more services */
-        },
+    },
 };
 
 static int
 gatt_svr_chr_access_temperature_data(uint16_t conn_handle, uint16_t attr_handle,
                                struct ble_gatt_access_ctxt *ctxt, void *arg)
 {
-    /* DUMMY to do */
-    static uint8_t dummy_temperature = 0x14;
+    /* DUMMY to do = sending 20 celcius x 128 = 2560, in hex*/
+    static uint16_t dummy_temperature = 0x0AA0;
+    dummy_temperature = dummy_temperature + variation;
+    variation = (variation + 10)%50;
     (void)conn_handle;
     (void)attr_handle;
     (void)arg;
@@ -137,7 +245,7 @@ gatt_svr_chr_access_temperature_peri(uint16_t conn_handle, uint16_t attr_handle,
                                struct ble_gatt_access_ctxt *ctxt, void *arg)
 {
     /* DUMMY to do */
-    static uint8_t dummy_value = 0x01;
+    static uint8_t dummy_value = 0x02;
     (void)conn_handle;
     (void)attr_handle;
     (void)arg;
@@ -150,6 +258,42 @@ gatt_svr_chr_access_temperature_peri(uint16_t conn_handle, uint16_t attr_handle,
     return BLE_ATT_ERR_UNLIKELY;
 }
 
+static int
+gatt_svr_chr_access_io_data(uint16_t conn_handle, uint16_t attr_handle,
+                               struct ble_gatt_access_ctxt *ctxt, void *arg)
+{
+    /* DUMMY*/
+    static uint8_t dummy_value = 0x7F;
+    (void)conn_handle;
+    (void)attr_handle;
+    (void)arg;
+    /* uint16_t uuid; */
+    int rc = os_mbuf_append(ctxt->om, &dummy_value, sizeof(dummy_value));
+
+    return rc == 0 ? 0 : BLE_ATT_ERR_INSUFFICIENT_RES;
+
+    assert(0);
+    return BLE_ATT_ERR_UNLIKELY;
+}
+
+
+static int
+gatt_svr_chr_access_io_conf(uint16_t conn_handle, uint16_t attr_handle,
+                               struct ble_gatt_access_ctxt *ctxt, void *arg)
+{
+    /* DUMMY to do */
+    static uint8_t dummy_value = 0x00;
+    (void)conn_handle;
+    (void)attr_handle;
+    (void)arg;
+    /* uint16_t uuid; */
+    int rc = os_mbuf_append(ctxt->om, &dummy_value, sizeof(dummy_value));
+
+    return rc == 0 ? 0 : BLE_ATT_ERR_INSUFFICIENT_RES;
+
+    assert(0);
+    return BLE_ATT_ERR_UNLIKELY;
+}
 
 static int
 gatt_svr_chr_access_device_info(uint16_t conn_handle, uint16_t attr_handle,
