@@ -57,7 +57,7 @@ int main(void)
     puts("32 bits values:");
     while (i>0)
     {
-        printf("%u\n", (unsigned int)random_uint32());
+        printf("%lu\n", (unsigned long int)random_uint32());
         i--;
     }
     
