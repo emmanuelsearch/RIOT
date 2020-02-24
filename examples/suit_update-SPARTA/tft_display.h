@@ -28,7 +28,7 @@ enum {
  * @brief   Message to be displayed on top of the display, application name
  */
 #ifndef APPLICATION_NAME
-#define APPLICATION_NAME       "TFT DISPLAY"
+#define APPLICATION_NAME       "SUIT UPDATE DEMO"
 #endif
 
 /**

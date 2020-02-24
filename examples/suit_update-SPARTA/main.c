@@ -190,7 +190,7 @@ static void *_sensor_thread(void *arg)
    while (1) {
         /* read temperature, pressure [and humidity] values */
         int16_t temperature = bmx280_read_temperature(&dev);
-//        uint32_t pressure = bmx280_read_pressure(&dev);
+        uint32_t pressure = bmx280_read_pressure(&dev);
 #if defined(MODULE_BME280_SPI) || defined(MODULE_BME280_I2C)
         uint16_t humidity = bme280_read_humidity(&dev);
 #endif
@@ -204,6 +204,10 @@ static void *_sensor_thread(void *arg)
         len = fmt_s16_dfp(str_hum, humidity, -2);
         str_hum[len] = '\0';
 #endif
+        char str_press[10];
+        len = fmt_u32_dec(str_press, pressure);
+        str_press[len] = '\0';
+
 /*
         // print values to STDIO 
         printf("Temperature [°C]: %s\n", str_temp);
@@ -217,7 +221,7 @@ static void *_sensor_thread(void *arg)
         ucg_SetFont(&ucg, ucg_font_profont15_mr);
         tft_puts(&ucg,"TEMP: ", str_temp, NULL, 64, 66, 1);
         tft_puts(&ucg,"HUM: ", str_hum, NULL, 64, 78, 1);
-       // tft_puts(&ucg,"PRESS: ", pressure, NULL, 64, 78, 1);
+        tft_puts(&ucg,"PRESS: ", str_press, NULL, 64, 90, 1);
 
 
         xtimer_sleep(MAINLOOP_DELAY);
