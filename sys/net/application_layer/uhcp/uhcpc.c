@@ -46,7 +46,8 @@ void uhcp_client(uhcp_iface_t iface)
     uint8_t buf[sizeof(uhcp_push_t) + 16];
 
     while(1) {
-        puts("uhcp_client(): sending REQ...");
+        // DEMO SPARTA HACK REMOVAL
+        //puts("uhcp_client(): sending REQ...");
         sock_udp_send(&sock, &req, sizeof(uhcp_req_t), &req_target);
         res = sock_udp_recv(&sock, buf, sizeof(buf), 10U*US_PER_SEC, &remote);
         if (res > 0) {
@@ -54,7 +55,8 @@ void uhcp_client(uhcp_iface_t iface)
             xtimer_sleep(60);
         }
         else {
-            puts("uhcp_client(): no reply received");
+            // DEMO SPARTA HACK REMOVAL
+            //puts("uhcp_client(): no reply received");
         }
     }
 }

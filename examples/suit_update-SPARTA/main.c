@@ -217,6 +217,7 @@ static void *_sensor_thread(void *arg)
 #endif
         puts("\n+-------------------------------------+\n");
 */
+
         _clear_data_area(&ucg);
         ucg_SetFont(&ucg, ucg_font_profont15_mr);
         tft_puts(&ucg,"TEMP: ", str_temp, NULL, 64, 66, 1);

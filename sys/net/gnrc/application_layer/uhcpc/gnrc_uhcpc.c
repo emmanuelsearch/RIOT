@@ -81,7 +81,8 @@ void uhcp_handle_prefix(uint8_t *prefix, uint8_t prefix_len, uint16_t lifetime, 
     }
 
     if (ipv6_addr_equal(&_prefix, (ipv6_addr_t*)prefix)) {
-        LOG_WARNING("gnrc_uhcpc: uhcp_handle_prefix(): got same prefix again\n");
+        // REMOVED FOR SPARTA DEMO
+        // LOG_WARNING("gnrc_uhcpc: uhcp_handle_prefix(): got same prefix again\n");
         return;
     }
 

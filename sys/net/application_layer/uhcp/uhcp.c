@@ -18,7 +18,8 @@ void uhcp_handle_udp(uint8_t *buf, size_t len, uint8_t *src, uint16_t port, uhcp
 {
     char addr_str[INET6_ADDRSTRLEN];
     inet_ntop(AF_INET6, src, addr_str, INET6_ADDRSTRLEN);
-    printf("got packet from %s port %u\n", addr_str, (unsigned)port);
+    // SPARTA DEMO HACK REMOVAL
+    // printf("got packet from %s port %u\n", addr_str, (unsigned)port);
 
     if (len < sizeof(uhcp_req_t)) {
         puts("error: packet too small.");
@@ -104,8 +105,12 @@ void uhcp_handle_push(uhcp_push_t *req, uint8_t *src, uint16_t port, uhcp_iface_
     memcpy(prefix, req->prefix, prefix_bytes);
 
     inet_ntop(AF_INET6, prefix, prefix_str, INET6_ADDRSTRLEN);
-
-    printf("uhcp: push from %s:%u prefix=%s/%u\n", addr_str, (unsigned)port, prefix_str, req->prefix_len);
+    
+    // BEGIN HACK and REMOVAL FOR SPARTA DEMO
+    port++;
+    port--;
+    // printf("uhcp: push from %s:%u prefix=%s/%u\n", addr_str, (unsigned)port, prefix_str, req->prefix_len);
+    // END HACK
     uhcp_handle_prefix(prefix, req->prefix_len, 0xFFFF, src, iface);
 }
 #endif
